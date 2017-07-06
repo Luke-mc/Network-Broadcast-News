@@ -1,15 +1,22 @@
 const net = require('net');
-const readline = require('readline');
-var currentClient = [];
+const currentClient = [];
 process.stdin.setEncoding('utf8');
+let serverName = null;
 
 const server = net.createServer((socket) => {
-  console.log("this  is " + socket.remoteAddress);
-  socket.write("hello");
-  socket.on("data", (data)=>{
-    process.stdout.write(data.toString());
-  });
   currentClient.push(socket);
+  console.log("Port: " + socket.remotePort);
+  socket.name = socket.remotePort;
+
+  socket.on("data", (data)=>{
+      process.stdout.write(data);
+      currentClient.forEach((e) => {
+      if(socket === e){
+        return;
+      }
+      e.write(data);
+    });
+  });
 });
 
 server.listen('6969',`0.0.0.0`, ()=>{
@@ -18,27 +25,9 @@ server.listen('6969',`0.0.0.0`, ()=>{
 
 process.stdin.on('readable', ()=>{
   let words = process.stdin.read();
-  if(words !== null){
-    currentClient.forEach((e)=> {e.write(words);});
-  }
+  currentClient.forEach((e)=> {e.write("[ADMIN] " + words);});
 });
 
 
-
-// server.on('data', (data)=>{
-//   console.log(data.toString());
-// });
-
-// function getClients(){
-//   return currentClient;
-//   }
-// function getServer(){
-//     return server;
-//   }
-
-//   module.exports = {
-//     getClients,
-//     getServer
-//   };
 
 
